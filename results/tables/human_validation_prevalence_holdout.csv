@@ -1,0 +1,5 @@
+dimension,human_mean_ge_0_5,human_prevalence_ge_10pct,prevalence_within_10pp
+steering_asymmetry,True,True,False
+token_inflation,True,True,False
+factual_reversal,False,False,True
+inverse_logit_polarity,True,True,False

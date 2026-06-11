@@ -1,0 +1,11 @@
+subset,category_a,category_b,n_co_flagged,mean_max_severity
+full,factual_integrity,logical_coherence,669,4.516
+full,factual_integrity,behavioral_resistance,337,4.418
+full,factual_integrity,output_shape,673,4.539
+full,factual_integrity,tonal_change,400,4.568
+full,logical_coherence,behavioral_resistance,2863,4.123
+full,logical_coherence,output_shape,2901,4.303
+full,logical_coherence,tonal_change,2340,4.352
+full,behavioral_resistance,output_shape,5552,3.844
+full,behavioral_resistance,tonal_change,4924,3.886
+full,output_shape,tonal_change,6953,3.705

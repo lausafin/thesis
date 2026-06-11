@@ -1,0 +1,20 @@
+% Human validation study appendix
+
+\subsection{Design}
+To validate the LLM-as-a-judge pipeline against human judgment, we conducted a stratified human rating study on the four dimensions with primary claims: steering asymmetry, token inflation, factual reversal, and inverse logit polarity.
+Single author-rater scored overall 0-5 severity on blinded samples without Pass~1 category context, dataset names, or LLM scores.
+The study comprised three splits: a calibration set ($N{=}20$), a main stratified set ($N{=}30$), and a Pass~1-unflagged holdout ($N{=}35$) drawn from the full-scale evaluation corpus.
+The main set was a stratified subsample of Pass~1-flagged samples ($N{=}30$).
+The author-rater read baseline and eight steered generations per sample.
+Inverse logit polarity ratings additionally displayed per-$\alpha$ target-token logits and steering targets.
+
+\subsection{Human-LLM Concordance}
+Table~\ref{tab:human_llm_concordance} compares author-rater scores to full-scale LLM Pass~2 scores on the 30 main-set samples.
+
+\input{sections/generated/human_validation_concordance.tex}
+
+\subsection{Pass~1 Holdout Screen}
+On the Pass~1-unflagged holdout, the author-rater screened for non-zero severity on the four primary dimensions to bound the Pass~1 false-negative rate.
+This estimate is exploratory and not extrapolated to corpus-wide prevalence without wide confidence intervals.
+
+\input{sections/generated/human_validation_holdout_screen.tex}

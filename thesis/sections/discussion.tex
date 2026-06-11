@@ -1,0 +1,44 @@
+\subsection{Interpreting Primary Findings}
+On the Pass~1-flagged subset, four dimensions meet pre-specified primary-claim thresholds (Table~\ref{tab:dimension_claims}): steering asymmetry, inverse logit polarity, token inflation, and factual reversal.
+Together, they show that signed multipliers are not interchangeable, that target-token logits can shift opposite to the intended direction or without surface change, that steered outputs often grow longer or more disclaimer-heavy, and that factual stance can reverse while generation remains fluent.
+Severe instances of these patterns appear in Appendix~\ref{ap:case_studies}.
+
+\subsection{Representation Entanglement}\label{Entanglement}
+Activation steering assumes the \textit{linear representation hypothesis}: target behaviors occupy approximately linear directions in the residual stream that can be added during the forward pass \citep{parkLinearRepresentationHypothesis2024, turnerSteeringLanguageModels2023}.
+Our results are consistent with this view: Steering reliably shifts target-token logits and often changes generated text. However, the injected mean-difference direction is not isolated from neighboring features (Table~\ref{tab:dimension_claims}).
+
+We interpret the primary side effects through \textbf{representation entanglement}: behavioral concepts and response structures co-encode in Llama-3.1-8B-Instruct's activation space, so a single vector shifts multiple features simultaneously \citep{zouRepresentationEngineeringTopDown2025, elhageToyModelsSuperposition2022}.
+\textbf{Steering asymmetry} suggests that negative and positive multipliers engage different entangled sub-features rather than acting as signed scalings of one direction.
+\textbf{Token inflation} and hedging escalation reflect co-activated length and persona or safety features.
+\textbf{Factual reversal} and label-content contradiction arise when behavior-linked features entangle with answer-label tokens.
+\textbf{Inverse logit polarity} indicates competing directions in the same residual subspace. \textbf{logit-text decoupling} remains rare and exploratory under the same framing.
+
+The uneven Pass~1 flag rate across datasets (Figure~\ref{fig:pass1_flags}) is consistent with prior reports that steerability is a property of datasets \citep{tanAnalysingGeneralisationReliability2024}.
+Conditional activation steering could reduce uniform over-steering where collateral effects dominate \citep{leeProgrammingRefusalConditional2025}.
+We frame these as mechanistic hypotheses consistent with our data, not proven causal accounts. Multi-token generation dynamics under per-token injection were not investigated here.
+
+\subsection{Steering-Multiplier Trade-Off}
+Side effects intensify with steering intensity: automated per-multiplier proxies on the flagged subset increase monotonically with $|\alpha|$ (Section~\ref{sec:results}, Figure~\ref{fig:per_alpha_objective}).
+Weak multipliers yield little behavioral or side-effect shift, and strong multipliers amplify entangled collateral effects rather than isolating the target concept.
+
+\subsection{Limitations and Caveats}\label{sec:limitations}
+Large $N$ on the flagged subset yields high statistical power.
+We therefore rely on pre-specified primary-claim thresholds (Table~\ref{tab:primary_claim_criteria}, Section~\ref{sec:Statistical Analysis}) rather than Benjamini-Hochberg significance alone.
+Sensitivity to cutoff choices appears in Table~\ref{tab:practical_sig}.
+
+Regarding conditional evaluation, Pass~2 rates apply only to Pass~1-flagged samples ($\approx$55.6\%, Table~\ref{tab:pass1_pass2_funnel}), so dimension prevalence describes a conditional sample and the Pass~1 false-negative rate is unknown.
+Pass~2 prompts receive Pass~1 category flags as context, so Pass~1$\to$Pass~2 concordance partly reflects protocol design rather than independent validation.
+Steered outputs were judged on train, validation, and test splits combined, so prevalence estimates are not restricted to a held-out test set.
+
+For annotation, the full-scale evaluation uses a single LLM judge per row; human validation was not performed at corpus scale.
+Inter-rater reliability ($\alpha_{\mathrm{ord}}$) was measured on a 1,800-sample subsample with three LLM-judge resamples (Section~\ref{Reliability and Validation Design}, Appendix~\ref{ap:iaa}), not on the full 28{,}807-sample Pass~1 corpus and not as human-human agreement.
+Human validation with a single author-rater on 85 protocol samples ($n{=}30$ main, $n{=}35$ holdout) provides exploratory checks for the four primary-claim dimensions only (Appendix~\ref{ap:human_validation}).
+Dimensions with $\alpha_{\mathrm{ord}} \ge 0.65$ on the LLM-judge subsample support stronger claims.
+
+The Pass~1 and Pass~2 rubrics were developed iteratively with supervisory input. They did not undergo formal pilot validation prior to full-scale evaluation.
+
+For scoring format, full-scale Pass~2 used overall cross-strength severity scoring, which sacrifices per-$\alpha$ scoring details.
+Per-$\alpha$ validation on 400 samples ($n{=}262$ comparable triples) and automated per-multiplier proxies mitigate but do not eliminate dimension-dependent bias between overall and decomposed scores (Section~\ref{sec:results}, Appendix~\ref{ap:iaa}).
+
+Pass~2 parser edge cases affected a small number of scored rows (Appendix~\ref{ap:iaa}).
+Re-annotating the full corpus with the per-$\alpha$ protocol was not feasible given the computational cost of the generation and evaluation pipeline.

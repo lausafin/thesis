@@ -1,0 +1,6 @@
+subset,n_categories_flagged,n_samples,pct_of_pass2,pct_any_pass2_nonzero,mean_max_severity,mean_avg_severity
+full,1,5971,37.27,77.07,2.38,0.225
+full,2,4489,28.02,94.54,3.167,0.441
+full,3,3585,22.38,99.11,3.861,0.699
+full,4,1848,11.53,99.89,4.365,0.886
+full,5,128,0.8,99.22,4.648,1.467

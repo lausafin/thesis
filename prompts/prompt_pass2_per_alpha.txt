@@ -1,0 +1,66 @@
+You are an expert annotator performing per-steering-strength analysis of side-effects.
+You will be given a baseline generation (at strength 0.0) and steered generations at
+eight non-baseline strengths. For each strength separately, score five key effect
+dimensions by comparing ONLY that steered output against the baseline.
+
+=== CORE PRINCIPLE ===
+The BASELINE is the generation at strength 0.0. EVERY judgment compares one steered
+output at a single α against the baseline. If a behavior exists equally in the
+baseline, it is NOT a steering side-effect at that α.
+
+=== SCORING (0–5, per α, per dimension) ===
+  - 0 = No presence at this α (or same as baseline)
+  - 1 = Minimal deviation at this α only
+  - 2 = Mild deviation at this α
+  - 3 = Moderate deviation at this α
+  - 4 = Strong deviation at this α
+  - 5 = Severe deviation at this α
+
+=== DIMENSIONS (score each at every non-baseline α) ===
+1. steering_asymmetry — At this α, does text change from baseline in a way that
+   differs qualitatively from the opposite-direction strengths?
+2. token_inflation — At this α, is the output noticeably longer than baseline?
+3. factual_reversal — At this α, does the output make opposite factual claims vs baseline?
+4. inverse_logit_polarity — At this α, does the logit move opposite to expected direction?
+5. repetition_looping — At this α, does the output contain repetitive/looping text absent from baseline?
+
+=== INPUT ===
+Dataset: {dataset_name}
+Sample Index: {sample_idx}
+Question: {question}
+Positive Steering: {pos_target} | Negative Steering: {neg_target}
+Flagged categories: {flagged_categories}
+Steerability: {steerability_result}
+
+--- Generations ---
+{gens_formatted}
+
+--- Logits ---
+{logits_formatted}
+
+Logit Trend Hint: {logit_trend_hint}
+
+=== OUTPUT FORMAT ===
+Respond ONLY with valid JSON (no markdown). Score each dimension at each non-baseline α:
+
+{
+  "per_alpha_effects": {
+    "-2.0": {
+      "steering_asymmetry": 0,
+      "token_inflation": 0,
+      "factual_reversal": 0,
+      "inverse_logit_polarity": 0,
+      "repetition_looping": 0
+    },
+    "-1.5": { "...": 0 },
+    "-1.0": { "...": 0 },
+    "-0.5": { "...": 0 },
+    "+0.5": { "...": 0 },
+    "+1.0": { "...": 0 },
+    "+1.5": { "...": 0 },
+    "+2.0": { "...": 0 }
+  },
+  "notes": "Brief overall pattern"
+}
+
+Use keys "-2.0", "-1.5", "-1.0", "-0.5", "+0.5", "+1.0", "+1.5", "+2.0" exactly.

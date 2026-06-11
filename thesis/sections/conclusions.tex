@@ -1,0 +1,23 @@
+% \section{Conclusions}
+\subsection{Answer to the Research Question}
+Four dimensions carry primary claims at scale on the Pass~1-flagged subset: steering asymmetry, inverse logit polarity, token inflation, and factual reversal (Table~\ref{tab:dimension_claims}).
+The central takeaway is that signed multipliers are not interchangeable and that fluent outputs can still exhibit these side effects under the same intervention.
+Section~\ref{sec:discussion} interprets these patterns through representation entanglement and the steering-multiplier trade-off.
+
+\subsection{Contributions Recap}
+We introduced a 19-dimension side-effect taxonomy with a two-pass judge protocol, scaled evaluation to 28{,}807 samples with pre-specified practical-significance criteria, and showed that steering asymmetry is a primary claim across datasets with inter-rater checks.
+Appendix~\ref{ap:case_studies} reports qualitative case studies.
+Appendix~\ref{ap:iaa} reports inter-rater agreement details.
+Appendix~\ref{ap:human_validation} reports the human validation study.
+
+\subsection{Broader Implications}
+Ordinal side-effect evaluation complements standard benchmarks for fluency and downstream performance when assessing activation steering.
+Perplexity correlates weakly with ordinal side-effect severity on the Pass~2-evaluated subset.
+Because inexpensive activation steering can amplify both alignment-oriented and undesirable behaviors, multiplier choice affects side-effect severity as well as target-behavior shift.
+
+\subsection{Limitations and Future Work}
+Scope and methodological caveats---including conditional Pass~2 sampling, single-judge annotation, subsample-only inter-rater agreement, scoring resolution, sample coverage, and limits of perplexity as a side-effect proxy---are discussed in Section~\ref{sec:limitations}.
+
+Future work should report per-$\alpha$ scoring at scale or, at minimum, sensitivity analyses using max(per-$\alpha$) and mean(per-$\alpha$) aggregations against the overall reference.
+Static activation-vector steering depends on the base instruction model architecture.
+Time-varying or context-conditional steering across generated tokens remains untested and warrants future study.

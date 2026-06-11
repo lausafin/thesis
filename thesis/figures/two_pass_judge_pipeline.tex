@@ -1,0 +1,144 @@
+% Two-pass LLM-as-a-judge evaluation funnel (Methodology)
+\begin{tikzpicture}[
+  node distance=0.7cm,
+  base/.style={
+    draw=black!55,
+    line width=0.6pt,
+    rounded corners=4pt,
+    align=center,
+    inner sep=6pt,
+    font=\small
+  },
+  inputbox/.style={
+    base,
+    fill=black!4,
+    text width=0.84\textwidth
+  },
+  processbox/.style={
+    base,
+    fill=black!4,
+    text width=0.84\textwidth
+  },
+  branchbox/.style={
+    base,
+    text width=0.35\textwidth,
+    inner sep=5pt,
+    font=\footnotesize
+  },
+  terminalbox/.style={
+    branchbox,
+    draw=black!40,
+    dashed,
+    fill=white
+  },
+  pass2box/.style={
+    branchbox,
+    fill=black!8,
+    inner sep=6pt
+  },
+  decision/.style={
+    draw=black!55,
+    line width=0.6pt,
+    diamond,
+    aspect=2.4,
+    align=center,
+    inner sep=2pt,
+    font=\footnotesize,
+    fill=white,
+    text width=2.8cm
+  },
+  grouplabel/.style={
+    font=\footnotesize\itshape,
+    text=black!65
+  },
+  pill/.style={
+    draw=black!35,
+    fill=black!10,
+    rounded corners=2pt,
+    inner sep=1.5pt,
+    font=\footnotesize\scshape
+  },
+  arrow/.style={
+    -{Stealth[length=2.2mm, width=1.6mm]},
+    line width=0.7pt,
+    draw=black!60,
+    rounded corners=2pt
+  },
+  edgelabel/.style={
+    font=\scriptsize,
+    fill=white,
+    inner sep=1pt
+  }
+]
+  \node[inputbox] (input) {%
+    \textbf{Per-sample input}\\[3pt]
+    {\footnotesize
+    Baseline ($\alpha{=}0$) + eight steered generations + logits\\
+    across $\alpha \in \{-2.0,\ldots,+2.0\}$}
+  };
+
+  \node[processbox, below=of input] (pass1) {%
+    \raggedright
+    \tikz[baseline=-0.4ex]{\node[pill] {\textsc{Screening}};}\\[5pt]
+    \centering
+    \textbf{Pass~1 --- LLM judge (all samples)}\\[3pt]
+    {\footnotesize
+    Five screening categories + steerability label\\
+    (single judge per sample)}
+  };
+
+  \node[decision, below=0.85cm of pass1] (decision) {Any category flagged?};
+
+  \coordinate (branchlevel) at ($(decision.south) + (0,-1.05cm)$);
+
+  \node[terminalbox, anchor=north] at ($(branchlevel)+(-0.205\textwidth,0)$) (skip) {%
+    \textbf{Not flagged}\\[3pt]
+    No Pass~2 scoring
+  };
+
+  \node[pass2box, anchor=north] at ($(branchlevel)+(0.205\textwidth,0)$) (pass2) {%
+    \raggedright
+    \tikz[baseline=-0.4ex]{\node[pill] {\textsc{Severity}};}\\[5pt]
+    \centering
+    \textbf{Pass~2 --- LLM judge}\\[1pt]
+    {\footnotesize (flagged subset)}\\[4pt]
+    {\footnotesize
+    19 side-effect dimensions $\times$ ordinal severity 0--5\\[2pt]
+    Pass~1 category flags supplied as judge context\\[2pt]
+    Integrated severity across full multi-$\alpha$ sequence}
+  };
+
+  \draw[arrow] ([yshift=-1pt]input.south) -- ([yshift=1pt]pass1.north);
+  \draw[arrow] ([yshift=-1pt]pass1.south) -- ([yshift=1pt]decision.north);
+
+  \draw[arrow] (decision.south) -- (branchlevel);
+  \draw[arrow] (branchlevel) -| node[pos=0.12, edgelabel, above] {No} (skip.north);
+  \draw[arrow] (branchlevel) -| node[pos=0.12, edgelabel, above] {Yes (flagged)} (pass2.north);
+
+  \draw[line width=1.1pt, black!45]
+    ([yshift=2pt]input.north west) -- ([yshift=2pt]input.north east);
+
+  \begin{scope}[on background layer]
+    \node[
+      fit=(input)(pass1),
+      inner sep=7pt,
+      fill=black!2,
+      rounded corners=6pt,
+      draw=black!20,
+      line width=0.5pt
+    ] (fullgroup) {};
+    \node[grouplabel, anchor=south west]
+      at ([xshift=3pt, yshift=-2pt]fullgroup.north west) {Full corpus};
+
+    \node[
+      fit=(pass2),
+      inner sep=9pt,
+      fill=black!6,
+      rounded corners=6pt,
+      draw=black!30,
+      line width=0.6pt
+    ] (flaggedgroup) {};
+    \node[grouplabel, anchor=south west]
+      at ([xshift=3pt, yshift=-2pt]flaggedgroup.north west) {Flagged subset};
+  \end{scope}
+\end{tikzpicture}

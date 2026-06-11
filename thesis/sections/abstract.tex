@@ -1,0 +1,12 @@
+Activation steering adjusts large language model behavior at inference time by intervening on internal activations rather than weights, offering computationally inexpensive control relative to fine-tuning.
+Steerability nevertheless varies across prompts and steering settings, and common quality proxies such as perplexity can miss fluent outputs that still exhibit factual artifacts, length inflation, or logit-level shifts without surface change.
+Prior steering work lacks a systematic taxonomy of such collateral effects at scale.
+
+We introduce a 19-dimension ordinal side-effect taxonomy with a two-pass LLM-as-a-judge protocol and apply Contrastive Activation Addition to Llama-3.1-8B-Instruct across 36 behavioral datasets, sweeping nine steering multipliers from $-2.0$ to $+2.0$.
+Severity scoring runs on Pass~1-flagged samples, so reported effects are conditional on Pass~1 category flagging rather than corpus-wide prevalence.
+
+The clearest primary claim is steering asymmetry: negative and positive multipliers produce unequal side effects. Token inflation, factual reversal, and inverse logit polarity also meet primary-claim thresholds among those rows. Additional significant effects are sparse or lower in agreement and are treated as exploratory findings.
+
+These patterns are consistent with representation entanglement and a steering-multiplier trade-off, where weak intervention yields little behavioral shift and strong intervention amplifies side effects.
+For practical model steering, ordinal side-effect evaluation should complement standard benchmarks for fluency and downstream performance.
+Code: \url{https://github.com/lausafin/thesis}

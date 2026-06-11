@@ -1,0 +1,173 @@
+% Inter-rater agreement appendix
+
+\subsection{Design}
+Inter-rater agreement (IAA) was assessed on a stratified subsample of 1{,}800 samples drawn from three evaluation batches (50 random samples per dataset per batch).
+Each sample received three independent DeepSeek (\texttt{deepseek-chat}) annotations using the same Pass~1 and Pass~2 templates as the full-scale evaluation. Krippendorff's ordinal agreement coefficient $\alpha_{\mathrm{ord}}$ was computed on three complete ratings. Pass~1 covered all 1{,}800 rows. Pass~2 effect dimensions used $n{=}1{,}147$ samples with three complete severity ratings.
+All three annotations used the same judge model, so $\alpha_{\mathrm{ord}}$ reflects scoring variation under repeated sampling, not agreement between human raters.
+% Low Pass~1 agreement on behavioral resistance ($\alpha_{\mathrm{ord}}{=}0.38$) suggests that category is ambiguous even under identical rubrics, which may contribute to Pass~1 false-positives (Section~\ref{sec:results}).
+
+\subsection{Pass~1 Agreement}
+Table~\ref{tab:iaa_pass1} reports ordinal $\alpha_{\mathrm{ord}}$ for Pass~1 screening categories.
+Steerability, logical coherence, and factual integrity reached moderate-to-substantial agreement ($\alpha_{\mathrm{ord}} \ge 0.75$).
+Behavioral resistance was lower ($\alpha_{\mathrm{ord}}{=}0.38$), reflecting that category is ambiguous even under identical rubrics, which may contribute to Pass~1 false-positives.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{Pass~1 inter-rater agreement (ordinal $\alpha_{\mathrm{ord}}$, three raters).}
+  \label{tab:iaa_pass1}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Category & $\alpha_{\mathrm{ord}}$ \\
+    \midrule
+    Steerability & 0.80 \\
+    Logical coherence & 0.81 \\
+    Factual integrity & 0.75 \\
+    Output shape & 0.64 \\
+    Tonal change & 0.64 \\
+    Behavioral resistance & 0.38 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Pass~2 Agreement}
+Table~\ref{tab:iaa_pass2} lists Pass~2 side-effect dimensions sorted by agreement.
+Dimensions above the 0.65 threshold used for primary claims selection include repetition looping, inverse logit polarity, factual reversal, option-label mismatch, token inflation, factual drift, steering asymmetry, and label-content contradiction.
+Logit-text decoupling ($\alpha_{\mathrm{ord}}{=}0.39$), tonal rigidity ($0.49$), and hedging escalation ($0.50$) fell below this threshold and are treated as exploratory findings despite frequent BH significance in the full-scale evaluation.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{Pass~2 inter-rater agreement (ordinal $\alpha_{\mathrm{ord}}$, $n{=}1{,}147$ samples, three raters).}
+  \label{tab:iaa_pass2}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Dimension & $\alpha_{\mathrm{ord}}$ \\
+    \midrule
+    Inverse logit polarity & 0.87 \\
+    Repetition looping & 0.84 \\
+    Factual reversal & 0.77 \\
+    Option-label mismatch & 0.72 \\
+    Token inflation & 0.71 \\
+    Factual drift & 0.69 \\
+    Steering asymmetry & 0.69 \\
+    Label-content contradiction & 0.68 \\
+    Hallucinated specificity & 0.67 \\
+    Sensitivity refusal & 0.66 \\
+    Persona amplification & 0.60 \\
+    Implicit assumption injection & 0.54 \\
+    Safety override resistance & 0.53 \\
+    Token compression & 0.51 \\
+    Monotonic factual scaling & 0.50 \\
+    Hedging escalation & 0.50 \\
+    Tonal rigidity & 0.49 \\
+    Neutralization rephrasing & 0.46 \\
+    Logit-text decoupling & 0.39 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+As a supplementary check, we compared judge-flagged inverse logit polarity against polarity inferred directly from target-token logits on all 16{,}015 Pass~2 scored rows (precision 1.0, recall 0.99).
+This objective oracle aligns with the high IAA on this dimension.
+
+\subsection{Overall vs.\ Per-\texorpdfstring{$\alpha$}{alpha} Validation}\label{per alpha result}
+Section~\ref{permultiplierresult} summarizes automated per-multiplier proxies on the full-scale evaluation, while judge-based per-$\alpha$ validation statistics are reported here.
+Full-scale Pass~2 uses overall cross-strength severity scores.
+To assess whether overall scores track decomposed per-strength ratings, we re-annotated a stratified subsample of 400 Pass~1-flagged inputs with three judges using the per-$\alpha$ judge template, covering five dimensions: steering asymmetry, token inflation, factual reversal, inverse logit polarity, and repetition looping.
+Of 400 inputs, 262 samples yielded comparable overall Pass~2 scores from the full-scale evaluation and complete per-$\alpha$ triple ratings.
+The remainder lacked parseable per-$\alpha$ judge output or mismatched run identifiers.
+
+Table~\ref{tab:overall_per_alpha} reports Pearson correlations between overall Pass~2 scores and max(per-$\alpha$) severity on the comparable subset; max(per-$\alpha$) denotes each sample's peak per-strength severity, averaged across samples.
+Repetition looping tracked max(per-$\alpha$) closely ($r{=}0.96$).
+Token inflation ($r{=}0.73$) and factual reversal ($r{=}0.59$-$0.65$) showed moderate-to-strong alignment, and steering asymmetry was weaker ($r{=}0.44$), with overall scores systematically higher than max(per-$\alpha$) severity (2.51 vs.\ 1.98).
+These correlations support using automated per-multiplier proxies and the subsample to interpret overall Pass~2 scores, while acknowledging dimension-dependent bias.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{Overall vs.\ max(per-$\alpha$) severity correlations ($n{=}262$ comparable samples, three raters).}
+  \label{tab:overall_per_alpha}
+  \resizebox{\linewidth}{!}{%
+  \begin{tabular}{@{}lrrrr@{}}
+    \toprule
+    Dimension & $r$ (Pearson) & MAE & Overall mean & max($\alpha$) mean \\
+    \midrule
+    Repetition looping & 0.96 & 0.13 & 0.87 & 0.89 \\
+    Token inflation & 0.73 & 1.10 & 1.69 & 2.31 \\
+    Factual reversal & 0.59 & 0.90 & 1.34 & 1.10 \\
+    Inverse logit polarity & 0.53 & 0.71 & 0.90 & 0.68 \\
+    Steering asymmetry & 0.44 & 1.30 & 2.51 & 1.98 \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\subsection{Parser and Data Notes}
+A parser edge case affected 34 Pass~2 rows where JSON evidence listed non-zero inverse logit polarity severity but exported CSV columns read zero.
+These rows are excluded from the six incomplete Pass~2 cases documented in Section~\ref{Conditional Evaluation Sample}.
+The issue was fixed in \texttt{pipeline/judge\_parser.py} for future runs.
+
+\subsection{Pass~1\texorpdfstring{$\to$}{->}Pass~2 Concordance}
+Pass~1$\to$Pass~2 concordance is defined in Section~\ref{Two-Pass Evaluation Protocol}.
+Among Pass~1-flagged samples, 89.7\% had at least one non-zero Pass~2 severity; 1{,}649 (10.3\%) were flagged in Pass~1 but received all-zero Pass~2 scores.
+Pass~1 steerability predicts Pass~2 magnitude: \textsc{Moderate}/\textsc{Strong}/\textsc{Anti-Steered} labels yielded $\ge 98\%$ non-zero Pass~2 rates and mean max severity $\ge 3.6$, whereas \textsc{Weak} flagged samples had 84.0\% non-zero and mean max severity 2.38 (mean per-sample maximum across the 19 Pass~2 dimensions).
+Figure~\ref{fig:steerability_asymmetry_box} shows the same pattern for steering asymmetry.
+Category-to-dimension overlap was highest for behavioral resistance$\to$steering asymmetry (77.8\% non-zero when resistance flagged, mean severity 2.42) and factual integrity$\to$factual reversal (75.1\%, mean 3.30), and lowest for behavioral resistance$\to$logit-text decoupling (3.3\% non-zero) (Figure~\ref{fig:pass1_pass2_concordance}).
+Samples with more co-flagged Pass~1 categories showed higher Pass~2 severity ($\ge 3$ categories: $\ge 99\%$ non-zero).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{pass1_pass2_concordance_heatmap.png}
+    \caption{Pass~1$\to$Pass~2 concordance: percentage of category-flagged samples with non-zero Pass~2 severity on each nested dimension (Section~\ref{sec:methodology}).}
+    \label{fig:pass1_pass2_concordance}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{pass1_steerability_vs_asymmetry_boxplot.png}
+    \caption{Boxplots of Pass-2 steering asymmetry severity (y-axis; ordinal 0-5) by Pass-1 steerability label (x-axis) among Pass-1-flagged samples ($N{=}16{,}015$). Pass-1 labels follow Section~\ref{sec:methodology}; \textsc{Unmeasurable} denotes samples whose baseline output precludes a valid steerability comparison across strengths.}
+    \label{fig:steerability_asymmetry_box}
+\end{figure}
+
+\subsection{Supplementary Severity Figures}
+Figure~\ref{fig:pass1_flags} shows Pass~1 any-category flag rate by behavioral dataset on the full corpus ($N{=}28{,}807$).
+Figure~\ref{fig:heatmap} shows mean Pass~2 severity across the full dataset$\times$dimension grid among Pass~1-flagged samples ($N{=}16{,}015$).
+Figure~\ref{fig:top_dims} ranks dimensions by average mean severity across datasets.
+The four primary claim dimensions appear among the highest-ranked effects (Table~\ref{tab:dimension_claims}).
+Figure~\ref{fig:score_dist} shows Pass~2 severity distributions for the eight highest-mean dimensions among Pass~2-evaluated samples ($N{=}16{,}015$).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{pass1_flag_rate_by_dataset.png}
+    \caption{Pass-1 any-category flag rate (horizontal axis, \%) by behavioral dataset (vertical axis). Each bar is one of 36 datasets; $N{=}28{,}807$ samples total.}
+    \label{fig:pass1_flags}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{severity_heatmap_dataset_dimension.png}
+    \caption{Mean Pass-2 severity (color scale, 0-5) by behavioral dataset (rows) and side-effect dimension (columns) among Pass-1-flagged samples.}
+    \label{fig:heatmap}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{top_dimensions_bar.png}
+    \caption{Average mean Pass~2 severity across 36 datasets (horizontal axis) by side-effect dimension (vertical axis).}
+    \label{fig:top_dims}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{score_distribution_by_dimension.png}
+    \caption{Pass~2 severity score distributions for the eight highest-mean dimensions among Pass~2-evaluated samples ($N{=}16{,}015$). Each panel plots sample count (y-axis) vs.\ ordinal severity 0-5 (x-axis).}
+    \label{fig:score_dist}
+\end{figure}
+
+\subsection{Perplexity vs.\ Side-Effect Severity}
+Figure~\ref{fig:perplexity_side_effects} supplements the corpus-mean perplexity curves in Section~\ref{sec:results} (Figure~\ref{fig:perplexity_strength}).
+Per-sample max $|\Delta\mathrm{perplexity}|$ from the $\alpha{=}0$ baseline correlates weakly with overall Pass~2 severity on the four primary-claim dimensions (Figure~\ref{fig:perplexity_side_effects}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{perplexity_vs_side_effects_scatter.png}
+    \caption{Hexbin density of overall Pass~2 severity (y-axis, ordinal 0-5) vs.\ per-sample max $|\Delta\mathrm{perplexity}|$ from the $\alpha{=}0$ baseline (x-axis) on the Pass~2-evaluated subset ($N{=}16{,}015$). Panels show the four primary-claim dimensions. Color encodes sample count per bin. Annotated $\rho$ is Pearson correlation.}
+    \label{fig:perplexity_side_effects}
+\end{figure}

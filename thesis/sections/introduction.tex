@@ -1,0 +1,25 @@
+Activation Addition (ActAdd) enables targeted control of large language model (LLM) behavior at inference time by intervening on internal activations rather than model weights \citep{turnerSteeringLanguageModels2023}.
+Contrastive Activation Addition (CAA) provides a contrastive-pair variant of the same intervention approach \citep{rimskySteeringLlama22024}.
+These methods are computationally inexpensive relative to fine-tuning, yet output quality can degrade under strong steering in ways that prior standard metrics, such as perplexity, do not capture.
+
+According to \cite{tanAnalysingGeneralisationReliability2024}, steerability varies across inputs and prompt settings (such as different system prompts).
+Likewise, \cite{vonrutteLanguageModelsGuide2024} shows that strong concept detection does not necessarily provide better guidance.
+Conditional activation steering further shows that behavior vectors can be applied selectively by context rather than uniformly \citep{leeProgrammingRefusalConditional2025}.
+Despite these advances, the representation engineering literature still lacks a systematic taxonomy of qualitative side effects at scale.
+
+When deploying these models in real-world settings, understanding these unmeasured side effects is necessary, as they present practical problems that extend beyond standard benchmark scores.
+A model can remain fluent while reversing factual answers, inflating disclaimers, or shifting target-token logits without changing the generated text. These are instances of side effects that perplexity and benchmark performance scores cannot flag.
+Without a clear framework to track these side effects, adjusting the steering multiplier essentially becomes a guessing game. If the multiplier ($|\alpha|$) is pushed too high, it introduces unwanted side effects, but if it is too low, the target behavior never actually appears.
+
+This thesis inquires into which structural side effects occur under activation steering across nine multipliers and how severe they are.
+We treat side effects as a reproducible measurement problem: 19 dimensions scored on an ordinal 0-5 severity scale relative to an $\alpha{=}0$ baseline.
+The full taxonomy appears in Table~\ref{tab:side_effect_taxonomy}.
+We apply CAA to Llama-3.1-8B-Instruct across 36 Model-Written Evaluations datasets \citep{perezDiscoveringLanguageModel2022}, sweep $\alpha \in \{-2.0,\ldots,+2.0\}$, and evaluate outputs with a two-pass LLM-as-a-judge pipeline: Pass~1 screens for steerability and broad anomaly categories; Pass~2 scores severity on flagged samples across the 19 side-effect dimensions.
+
+This thesis makes three contributions.
+First, we introduce a taxonomy of steering side effects (including steering asymmetry, token inflation, factual reversal, and inverse logit polarity) with ordinal scoring rubrics and a two-pass annotation protocol.
+Second, we scale this evaluation to 28{,}807 samples and distinguish primary claims from exploratory findings using pre-specified practical-significance criteria (Section~\ref{sec:Statistical Analysis}).
+Table~\ref{tab:dimension_claims} summarizes the resulting primary vs.\ exploratory classifications.
+Third, we validate the measurement protocol with inter-rater agreement on a 1{,}800-sample subsample, per-$\alpha$ severity checks, human rating on the four primary dimensions, and exploratory case studies of logit-text decoupling.
+
+Qualitative case studies and inter-rater agreement details appear in the appendices.

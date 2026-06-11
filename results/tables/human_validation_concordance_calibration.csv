@@ -1,0 +1,5 @@
+dimension,n_samples,spearman_rho,mae,human_mean,llm_mean,human_pct_nonzero,llm_pct_nonzero,prevalence_delta_pp
+steering_asymmetry,20,0.47408776732773505,1.45,1.7,2.55,85.0,85.0,0.0
+token_inflation,20,0.11813511689910847,1.4,1.55,0.95,65.0,40.0,25.0
+factual_reversal,20,,0.9,0.0,0.9,0.0,25.0,-25.0
+inverse_logit_polarity,20,0.9275638759379613,0.5,1.6,1.3,50.0,40.0,10.0

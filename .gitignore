@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+*.bbl
+*.blg
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.lot.aux
+*.pdf
+*.synctex.gz
+*.fls
+*.fdb_latexmk

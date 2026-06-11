@@ -1,0 +1,4 @@
+effect,n_evaluated,n_non_zero,pct_non_zero,mean_severity
+label_content_contradiction,16015,717,4.5,0.152
+hedging_escalation,16015,2278,14.2,0.415
+factual_reversal,16015,3301,20.6,0.893

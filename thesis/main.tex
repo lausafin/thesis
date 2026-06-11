@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lmodern}
+\usepackage{microtype}
+% KU front page integration
+\usepackage[english, science, hyperref]{ku-frontpage}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{xurl}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\graphicspath{{figures/}{../results/figures/}}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+
+\usepackage[round,authoryear]{natbib}
+\bibliographystyle{plainnat}
+
+% KU front page metadata
+\assignment{Bachelor's Thesis}
+\author{Hetianyu Huang, Lau Safin}
+\title{Characterizing Side Effects of Activation Steering}
+\subtitle{}
+\date{12 June 2026}
+\advisor{Supervisor: Shivam Adarsh, Christina Lioma}
+% Optional: \frontpageimage{img/your-image.pdf}
+\kupdfsetup{Characterizing Side Effects of Activation Steering}{}{Hetianyu Huang, Lau Safin}
+
+
+\begin{document}
+% KU front page title
+\begingroup
+  \fontencoding{T1}\selectfont
+  \maketitle
+\endgroup
+
+\tableofcontents
+\newpage
+% Abstract
+\begin{abstract}
+\input{sections/abstract.tex}
+\end{abstract}
+\newpage
+\section{Introduction}\label{sec:introduction}
+\input{sections/introduction.tex}
+\section{Background and Related Work}\label{sec:background}
+\input{sections/background}
+
+\section{Methodology}\label{sec:methodology}
+\input{sections/methodology.tex}
+
+
+\section{Experimental Setup}\label{sec:experimental-setup}
+\input{sections/experimental_setup.tex}
+
+
+\section{Results}\label{sec:results}
+\input{sections/results.tex}
+
+\section{Discussion}\label{sec:discussion}
+\input{sections/discussion.tex}
+
+\section{Conclusions}\label{sec:conclusions}
+\input{sections/conclusions.tex}
+
+
+
+
+
+\clearpage
+\appendix
+\section{Qualitative Case Studies}\label{ap:case_studies}
+\input{sections/appendix_case_studies}
+
+\section{Inter-Rater Agreement}\label{ap:iaa}
+\input{sections/appendix_iaa}
+
+\section{Human Validation Study}\label{ap:human_validation}
+\input{sections/appendix_human_validation}
+
+\section{Data and Code Availability}\label{ap:data_availability}
+All evaluation artifacts, reproduction scripts, and judge templates (Pass~1, integrated Pass~2, and per-$\alpha$ templates under \texttt{prompts/}) are available at \url{https://github.com/lausafin/thesis}.
+
+Experiments use Llama-3.1-8B-Instruct (Meta license), Anthropic Model-Written Evals \citep{perezDiscoveringLanguageModel2022}, and DeepSeek API judging under the provider's terms of use.
+
+
+\bibliography{references}
+\end{document}

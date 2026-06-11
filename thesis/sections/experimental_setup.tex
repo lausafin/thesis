@@ -1,0 +1,78 @@
+% Experimental setup
+
+\subsection{Datasets}
+We use 36 datasets from the Anthropic Model-Written Evals (MWE) suite \citep{perezDiscoveringLanguageModel2022}, spanning personality traits, ideological stances, and AI-risk behaviors.
+Each dataset targets a specific behavior, such as ``desire for power'' or ``awareness of being an AI''.
+Prompts are either multiple-choice questions with labeled options `(A)' and `(B)' or binary yes/no questions.
+Formally, each dataset $D$ comprises triples ($x,\ y_+,\ y_-$), where $x$ is the prompt with answer choices, $y_+$ aligns with the target behavior, and $y_-$ does not.
+Option order is shuffled across prompts so that $y_+$ and $y_-$ are not tied to fixed letter tokens, isolating semantic behavior rather than token preference.
+
+Each dataset is split 60/10/30 for vector extraction and layer selection, while the entire dataset is used for evaluation.
+As a result, the steered generations (sample), logit traces, and judge annotations are aggregated across the train, validation, and test splits combined.
+
+\subsection{Propensity and Steerability}
+To measure how well steering shifts behavior, we use logit-difference propensity and steerability as defined by \citet{tanAnalysingGeneralisationReliability2024}.
+The logit-difference propensity is the difference between the logits of the positive and negative answer tokens (e.g., 'A' and 'B'), defined as
+$$m_{LD} = \text{logit}(y_+) - \text{logit}(y_-)$$
+Once the steering vector is extracted and applied, propensity is evaluated as a function of the steering multiplier ($\alpha$).
+This evaluation can be performed for either a single sample or aggregated across an entire dataset.
+The steerability metric is then defined as the slope of a least-squares linear regression of $m_{LD}$ vs.\ steering multiplier $\alpha$, which can likewise be calculated on a per-sample or per-dataset basis.
+
+\subsection{Steering Pipeline (CAA)}
+\subsubsection{Models}
+Following prior work on lightweight instruction-tuned models \citep{rimskySteeringLlama22024, tanAnalysingGeneralisationReliability2024}, we select \textbf{Llama-3.1-8B-Instruct} as the target model (32 transformer layers).
+
+\subsubsection{Vector extraction and layer selection}
+Steering follows Contrastive Activation Addition (CAA) with Mean-Difference vectors (Section~\ref{sec:bg_extraction}).
+For each dataset, $v_{MD}$ is computed on the training split at the answer token.
+We sweep candidate layers 10 through 16, following prior CAA work that reports peak steerability in middle layers on Llama-family models \citep{rimskySteeringLlama22024}.
+For each candidate we apply the vector on the validation split across the full $\alpha$ grid.
+We measure $m_{LD}$ at the first generated token for each $\alpha$, average across validation samples per multiplier, and take the least-squares slope of that curve as validation-set steerability.
+We select the layer with the highest validation-set steerability.
+This criterion maximizes logit-level behavioral shift before full-scale generation and side-effect evaluation, so weak extraction layers do not confound downstream severity scores.
+Per-dataset layer choices are recorded in each dataset's generation export metadata in the public repository (\url{https://github.com/lausafin/thesis}).
+
+\subsubsection{Generation and injection}\label{practical injection}
+Text is generated greedily ($\text{temperature}=0.0$, $\texttt{do\_sample}=\texttt{False}$) with $\texttt{max\_new\_tokens}=100$ and system prompt ``You are a helpful, honest and concise assistant.''
+We implement injection using forward hooks that inject the steering vector into layer outputs.
+Following \citet{tanAnalysingGeneralisationReliability2024}, we intervene on the last token of the prompt and all subsequently generated tokens.
+Injection scope matches the activation-addition setup in Section~\ref{sec:bg_injection}.
+
+\subsection{Evaluation Pipeline}
+The side-effect evaluation protocol is specified in Section~\ref{Two-Pass Evaluation Protocol}.
+Because API throughput was required at 28{,}807 samples, we use DeepSeek (\texttt{deepseek-chat}) as the LLM judge for Pass~1 and overall Pass~2 scoring.
+The same model served as the sole full-scale judge and as all three resamples in the inter-rater agreement subsample, so rubric templates and scoring behavior are identical across annotation settings.
+Pass~1 and Pass~2 judge templates and ordinal rubrics are versioned in the public repository (Appendix~\ref{ap:data_availability}).
+The per-$\alpha$ validation subsample used a separate per-$\alpha$ judge template from the same repository.
+The full-scale evaluation applied a single annotation per sample ($\texttt{num\_evals}=1$) across all 28{,}807 samples in three batches (May 2026).
+
+Table~\ref{tab:experimental_params} summarizes the key hyperparameters.
+
+\begin{table}[htbp]
+  \centering\small
+  \caption{Experimental hyperparameters.}
+  \label{tab:experimental_params}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Parameter & Value \\
+    \midrule
+    Base model & Llama-3.1-8B-Instruct \\
+    Datasets & 36 MWE behavioral evals \\
+    Train / val / test split & 60\% / 10\% / 30\% \\
+    Layer candidates & 10-16 (per-dataset selection) \\
+    Steering multipliers $\alpha$ & $-2.0$ to $+2.0$ (step 0.5) \\
+    Generation & Greedy, $\texttt{max\_new\_tokens}=100$ \\
+    System prompt & Helpful, honest, concise assistant \\
+    Injection scope & Last prompt token + generated tokens \\
+    Pass~1 / Pass~2 judge & DeepSeek \texttt{deepseek-chat} \\
+    Full-scale annotations & 1 judge per sample \\
+    IAA subsample & 1{,}800 samples, 3 judges each \\
+    Human validation & 85 total (20 cal.\ + 30 main + 35 holdout), 1 rater \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Compute Resources}
+Steered generation and CAA layer selection for the corpus ran on NVIDIA A100 GPUs via a SLURM job array (up to eight parallel workers, six-hour limit per array slot).
+The main batch covering 31 datasets consumed approximately 57 A100 GPU-hours; five additional datasets were generated in separate jobs (provenance in the public repository).
+Full-scale Pass~1 and Pass~2 judging at 28{,}807 samples used the DeepSeek API and ran for approximately 24 hours across three batches.

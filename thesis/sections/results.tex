@@ -1,0 +1,65 @@
+% Results — tables in sections/generated/ sourced from results/tables/
+
+Four side-effect dimensions meet pre-specified primary-claim thresholds on the Pass~1-flagged subset ($N{=}16{,}015$ parseable Pass~2 rows): steering asymmetry, inverse logit polarity, token inflation, and factual reversal.
+Unless noted, Pass~2 statistics describe effects conditional on Pass~1 flagging (55.6\% of the 28{,}807-sample corpus), not corpus-wide prevalence.
+Table~\ref{tab:primary_claims_summary} summarizes severity and prevalence for these four dimensions. Table~\ref{tab:dimension_claims} classifies all 19 dimensions.
+Figure~\ref{fig:per_alpha_objective} summarizes multiplier dependence. Appendix~\ref{ap:iaa} reports dataset$\times$dimension severity heterogeneity (Figure~\ref{fig:heatmap}).
+
+\input{sections/generated/primary_claims_summary.tex}
+
+\subsection{Conditional Evaluation Sample}\label{Conditional Evaluation Sample}
+Pass~1 screened every sample for steerability and broad anomaly categories, flagging 16{,}021 samples (55.6\%) for Pass~2; six flagged rows lacked parseable Pass~2 output (Table~\ref{tab:pass1_pass2_funnel}).
+Pass~1 steerability was predominantly weak or absent: 51.9\% \textsc{Weak}, 21.9\% \textsc{None}, 12.5\% \textsc{Moderate}, 13.4\% \textsc{Strong}, and 0.2\% \textsc{Anti-Steered}.
+Flag rates ranged from 23.9\% to 100.0\% across datasets (Appendix~\ref{ap:iaa}, Figure~\ref{fig:pass1_flags}).
+
+\input{sections/generated/pass1_pass2_funnel.tex}
+
+\subsection{Primary Side Effects}
+\textbf{Steering asymmetry} is the strongest and most universal primary claim: all 36 datasets are BH-significant and meet primary thresholds (Table~\ref{tab:dimension_claims}), with the largest mean severity and Cohen's $d$ (Table~\ref{tab:primary_claims_summary}).
+
+\textbf{Token inflation}, \textbf{inverse logit polarity}, and \textbf{factual reversal} also carry primary claims but with greater dataset heterogeneity.
+Inverse logit polarity has the highest inter-rater agreement among primary dimensions ($\alpha_{\mathrm{ord}}{=}0.87$) and non-zero judge ratings align with polarity inferred directly from target-token logits (precision 1.0, recall 0.99) (Appendix~\ref{ap:iaa}).
+Human-LLM concordance on the four primary dimensions is reported in Appendix~\ref{ap:human_validation}.
+
+Persona amplification and tonal rigidity are frequently BH-significant yet fail the IAA gate for primary claims.
+Hedging escalation fails both the IAA and mean-severity thresholds.
+\textbf{Logit-text decoupling} remains rare and exploratory.
+
+Case studies can be found in Appendix~\ref{ap:case_studies}.
+
+\input{sections/generated/dimension_claim_summary.tex}
+
+\subsection{Statistical Power and Practical Significance}\label{Statistical Power and Practical Significance}
+We test whether Pass~2 severity differs from zero using one-sided Wilcoxon signed-rank tests with Benjamini-Hochberg correction across 684 dataset-dimension pairs (Section~\ref{sec:Statistical Analysis}).
+With $N \approx 500$-820 flagged samples per dataset, \textbf{503/684 tests (73.5\%) are BH-significant}, combining large prevalent effects with sparse ones driven by sample size rather than magnitude.
+Pre-specified primary-claim criteria reduce this to \textbf{141 primary} and \textbf{362 exploratory} cells.
+Table~\ref{tab:practical_sig} shows sensitivity to alternative cutoffs.
+Pooled and dataset-mean prevalence can differ because the former sums non-zero rows over Pass~2 scored rows while the latter averages per-dataset rates.
+
+\input{sections/generated/practical_significance_sensitivity.tex}
+
+\subsection{Severity Across Steering Multipliers}\label{permultiplierresult}
+Pass~2 overall severity scores assign one rating per dimension per sample after viewing all nine multipliers.
+To test whether effects concentrate at specific strengths, we complement these overall scores with automated per-multiplier proxies: token-length ratio, text deviation from baseline, and mean $|\Delta\mathrm{logit}|$ relative to $\alpha{=}0$.
+
+All three proxies grow monotonically with $|\alpha|$ on the flagged subset (Figure~\ref{fig:per_alpha_objective}), supporting the token-inflation primary claim independently of judge subjectivity.
+
+Corpus-mean generation perplexity changes only modestly across the multiplier grid: $+5.6\%$ at $\alpha{=}{-}2.0$ and $+1.0\%$ at $\alpha{=}{+}2.0$ relative to $\alpha{=}0$ on the full corpus (Figure~\ref{fig:perplexity_strength}).
+Perplexity can therefore remain stable while side effects intensify.
+On the Pass~2-evaluated subset ($N{=}16{,}015$), per-sample max $|\Delta\mathrm{perplexity}|$ correlates weakly with overall severity on three primary dimensions (Pearson $\rho{=}0.36$ token inflation, $\rho{=}0.30$ factual reversal, $\rho{=}0.26$ steering asymmetry) and is essentially uncorrelated with inverse logit polarity ($\rho{\approx}{-}0.05$, Figure~\ref{fig:perplexity_side_effects}, Appendix~\ref{ap:iaa}).
+
+A per-$\alpha$ judge validation subsample ($N{=}400$, $n{=}262$ comparable triples) corroborates overall Pass~2 scores on five dimensions (Appendix~\ref{ap:iaa}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{per_alpha_objective_metrics.png}
+    \caption{Automated per-multiplier proxies on the Pass-1-flagged subset ($N{=}16{,}015$). All three panels share steering multiplier $\alpha$ (x-axis). Left to right: mean token-length ratio vs.\ baseline, mean text deviation, and mean $|\Delta\mathrm{logit}|$ vs.\ $\alpha{=}0$; error bars show standard error of the mean.}
+    \label{fig:per_alpha_objective}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{perplexity_vs_steering_strength.png}
+    \caption{Mean generation perplexity across $\alpha$ on the full corpus ($N{=}28{,}807$, blue) and Pass~2-evaluated subset ($N{=}16{,}015$, orange). Error bars show standard error of the mean.}
+    \label{fig:perplexity_strength}
+\end{figure}

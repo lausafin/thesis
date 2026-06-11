@@ -1,0 +1,60 @@
+\subsection{Steering Vectors}\label{sec:bg_steering_vectors}
+To steer an LLM's output, current methods can be categorized by their level of intervention: fine-tuning (weight-level intervention), prompt engineering (input-level intervention), and activation engineering (activation intervention).
+Among these, activation engineering adjusts behavior at inference time by injecting steering vectors into the residual stream, the central pathway where information is accumulated and refined layer by layer \citep{yuExploringResidualStream2023}.
+It avoids the prohibitive computational costs and the risk of catastrophic forgetting associated with fine-tuning, while overcoming the fragility and context-window limitations inherent to prompt engineering.
+
+Activation engineering assumes that concepts such as honesty, power-seeking, or truthfulness are encoded as linear directions in activation space.
+This assumption is formalized by the \textit{linear representation hypothesis} \citep{parkLinearRepresentationHypothesis2024}.
+These directions need not be orthogonal.
+Because features can co-activate, steering one concept can shift related features (Section~\ref{sec:discussion}).
+Empirical activation-engineering methods preceded formal theoretical accounts, and the linear representation hypothesis later formalized why these interventions work.
+
+According to the hypothesis, these concept directions can be extracted as vectors from the model's intermediate representations.
+These vectors, termed \textit{steering vectors}, can subsequently be injected back into the residual stream during inference, and bias the model toward the target behavior without modifying weights.
+
+\subsection{Steering Vector Extraction}\label{sec:bg_extraction}
+As the field has evolved, the methods used to derive steering vectors have taken several different forms.
+\citet{hernandezInspectingEditingKnowledge2023} learn an affine transformation via gradient descent that maps entity and attribute representations to a new entity representation at a single token and layer.
+Subsequent work shifted to linear probes on activations: Inference-Time Intervention (ITI) trains linear probes on attention-head activations to identify truth-sensitive heads, then shifts activations along head-specific directions at those heads during inference \citep{liInferenceTimeInterventionEliciting2024}.
+\cite{vonrutteLanguageModelsGuide2024} use probe weight vectors from logistic regression on activations as steering vectors.
+By contrast, Representation Engineering (RepE) extracts concept directions via PCA and related linear probes on contrastive activations, then shifts activations along those directions \citep{zouRepresentationEngineeringTopDown2025}.
+
+However, recent developments demonstrate that effective steering vectors can also be computed non-parametrically using contrastive pairs of prompts \citep{turnerSteeringLanguageModels2023}.
+These pairs consist of a positive and a negative prompt designed to isolate a specific target concept, such as power-seeking versus refusal.
+This contrastive extraction method has been shown to maintain the effectiveness of steering while simplifying the extraction pipeline \citep{turnerSteeringLanguageModels2023, rimskySteeringLlama22024}. For instance, \cite{rimskySteeringLlama22024} demonstrates that subtracting the mean activations of negative prompt sets from positive ones yields highly functional steering vectors. Furthermore, their evaluation across diverse benchmarks (e.g., MMLU and TruthfulQA) shows that applying these vectors successfully induces the target behavior while causing only minimal degradation in the model's baseline capabilities \citep{rimskySteeringLlama22024}.
+
+We extract steering vectors with the Mean Difference (MD) method, following \cite{rimskySteeringLlama22024}.
+Dataset format and contrastive triple structure are specified in \hyperref[sec:experimental-setup]{Experimental Setup}.
+To compute the Mean Difference steering vector $v_{MD}$, which captures the linear representation of the target concept associated with the dataset $D$, we use the following formulation:
+$$v_{MD}=\frac{1}{|D|}\sum_{(x,y_+,y_-)\in D}a_L(x,y_+)-a_L(x,y_-)$$
+where $a_L(x,y)$ denotes the model's activation at layer $L$ given the prompt $x$ and answer option $y$.
+Although this formulation allows us to extract a steering vector at any layer, prior works have consistently demonstrated that vectors extracted from the middle layers yield the highest steerability \citep{turnerSteeringLanguageModels2023, rimskySteeringLlama22024, tanAnalysingGeneralisationReliability2024}.
+Our layer selection via validation-set steerability following \cite{tanAnalysingGeneralisationReliability2024} is described in \hyperref[sec:experimental-setup]{Experimental Setup}.
+
+\subsection{Activation Addition (Steering Vector Injection)}\label{sec:bg_injection}
+Because an MD steering vector can be derived at any layer, the injection site must be specified.
+Prior work typically adds the steering vector back into the same layer from which it was extracted \citep{rimskySteeringLlama22024}.
+
+Layer matching works because Transformers build abstractions depth-wise: early layers encode lexical features, deeper layers encode semantic abstractions.
+\cite{rimskySteeringLlama22024} report that steering-vector similarity decreases across distant layers, and that applying a layer-13 vector at other depths yields a steep effect-size drop near layer 17, consistent with abstract representations stabilizing before the final layers.
+\cite{rimskySteeringLlama22024} explain this by suggesting that the model has already finished processing the abstract representations, meaning the behavior can no longer be manipulated in the same way in later layers.
+Consequently, a steering vector extracted at layer $L$ is tied to that layer's activation geometry.
+Injecting it into a different layer may cause a representational mismatch, as the vector's direction no longer aligns with the activation space at that depth.
+
+Typically, the injection updates activations as follows:
+$$h^{(L)} \rightarrow h^{(L)} + \alpha \cdot v_{MD}$$
+where $h^{(L)}$ represents the activation at layer $L$ for the token targeted for intervention, and $\alpha$ is the steering multiplier.
+
+Section~\ref{practical injection} specifies our injection scope and hook implementation.
+
+\subsection{Evaluation Gaps}\label{sec:bg_evaluation_gaps}
+Prior steering evaluations measure different outcomes than the side-effect taxonomy developed here.
+\citet{turnerSteeringLanguageModels2023} assess ActAdd by target-behavior induction on toxicity, sentiment, and topic steering and by general knowledge retention via perplexity and ConceptNet P@K, without ordinal scoring of side effects.
+\citet{rimskySteeringLlama22024} extend the same contrastive-pair setup to Llama-2 and report minimal baseline-capability loss on MMLU and TruthfulQA, again without structured side-effect labels.
+\citet{tanAnalysingGeneralisationReliability2024} quantify steerability through logit-difference slopes and steering vector generalization across prompts, but does not score qualitative side effects.
+
+Together, these lines of work establish that steering can shift logits and often surface text, yet none provide a multi-dimensional ordinal protocol spanning factual, structural, tonal, and logit-text decoupling effects.
+Furthermore, standard scalar metrics like perplexity cannot capture the side effects caused by steering, since they only measure general token predictability, ignoring nuanced qualitative changes such as excessive disclaimers or sudden shifts in tone. For instance, a model's benchmark performance might remain stable even as an intervention inadvertently reverses factual answers, inflates disclaimers, or shifts underlying logits without altering the generated text.
+
+This gap motivates the ordinal side-effect taxonomy and two-pass judge protocol described in Section~\ref{Two-Pass Evaluation Protocol}.
+

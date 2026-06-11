@@ -1,0 +1,2 @@
+metric,value,n_samples_evaluated,mean_severity
+pct_flagged_samples_with_decoupling,1.8,16015,0.092

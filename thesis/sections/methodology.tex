@@ -1,0 +1,116 @@
+% Methodology
+
+\subsection{Notation and Terminology}
+We denote the steering multiplier by $\alpha$ (nine values from $-2.0$ to $+2.0$).
+A \textit{side effect} is any of the 19 Pass~2 dimensions in Table~\ref{tab:side_effect_taxonomy}, scored by \textit{severity} on 0-5 relative to the $\alpha{=}0$ baseline.
+Samples \textit{flagged} in Pass~1 are those with at least one screening category marked \textsc{Flagged}.
+A \textit{sample} is $\alpha{=}0$ baseline and steered generations across the full multiplier grid.
+Pass~1 and Pass~2 operate on these samples.
+Krippendorff's ordinal agreement coefficient is written $\alpha_{\mathrm{ord}}$ when cited alongside steering $\alpha$.
+Experimental hyperparameters appear in Table~\ref{tab:experimental_params}.
+
+% \subsection{Side-Effect Taxonomy}\label{sec:side_effect_taxonomy}
+% We measure 19 ordinal side-effect dimensions grouped under five Pass~1 screening categories (Table~\ref{tab:side_effect_taxonomy}).
+% Each Pass~2 dimension compares steered outputs against the $\alpha{=}0$ baseline within the sample; effects present equally in the baseline are scored 0.
+\subsection{Two-Pass Evaluation Protocol} \label{Two-Pass Evaluation Protocol}
+\begin{table}[htbp]
+  \centering\small
+  \caption{Pass~2 side-effect dimensions nested under Pass~1 screening categories. \textbf{Bold} rows denote the four dimensions pre-specified for primary-claim evaluation: steering asymmetry, inverse logit polarity, token inflation, and factual reversal.}
+  \label{tab:side_effect_taxonomy}
+  \resizebox{\textwidth}{!}{%
+  \setlength{\tabcolsep}{2pt}%
+  \scriptsize
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{3.0cm}p{8.5cm}@{}}
+    \toprule
+    Pass~1 category & Dimension & Definition (deviation from baseline) \\
+    \midrule
+    \multirow{4}{*}{\parbox{2.2cm}{\raggedright Factual Integrity}} & Factual drift & Different factual answer on a single-ground-truth question. \\
+    & Monotonic factual scaling & Numerical values systematically increase or decrease with $|\alpha|$. \\
+    & Hallucinated specificity & New fabricated concrete details (numbers, sources, dates). \\
+    & \textbf{Factual reversal} & Directionally or categorically opposite factual claim (e.g., yes$\to$no). \\
+    \midrule
+    \multirow{3}{*}{\parbox{2.2cm}{\raggedright Logical Coherence}} & Label-content contradiction & Stated answer contradicts the model's own subsequent content. \\
+    & Option-label mismatch & Incorrect mapping between option letter and answer text. \\
+    & Repetition looping & Repetitive or looping text absent from baseline. \\
+    \midrule
+    \multirow{5}{*}{\parbox{2.2cm}{\raggedright Behavioral Resistance}} & Sensitivity refusal & New refusal or intensified refusal beyond baseline. \\
+    & Logit-text decoupling & Logits shift directionally but text stays semantically identical. \\
+    & \textbf{Steering asymmetry} & One steering direction changes text; the other does not (or changes qualitatively differently). \\
+    & Safety override resistance & Persistent or newly introduced safety blocks across strengths. \\
+    & \textbf{Inverse logit polarity} & Target-token logits move opposite to the intended steering direction. \\
+    \midrule
+    \multirow{3}{*}{\parbox{2.2cm}{\raggedright Output Shape}} & Token compression & Shorter output than baseline. \\
+    & \textbf{Token inflation} & Longer output than baseline. \\
+    & Implicit assumption injection & New assumptions, names, geographies, or contexts not in prompt or baseline. \\
+    \midrule
+    \multirow{4}{*}{\parbox{2.2cm}{\raggedright Tonal Change}} & Neutralization rephrasing & New hedging or non-committal phrasing vs.\ baseline. \\
+    & Hedging escalation & Disclaimers or preambles exceed baseline and grow across strengths. \\
+    & Persona amplification & Self-referential identity statements introduced or amplified. \\
+    & Tonal rigidity & Tone becomes stiff, preachy, or robotic vs.\ baseline. \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+We measure 19 ordinal side-effect dimensions grouped under five Pass~1 screening categories (Table~\ref{tab:side_effect_taxonomy}).
+Scoring all 19 dimensions on every sample at corpus scale would be costly and yield sparse severities on weakly steered inputs.
+We therefore use a two-pass funnel that screens the full corpus in Pass~1 and applies the full taxonomy only on flagged samples, concentrating annotation where steering produces detectable anomalies.
+Pass~2 inputs are conditional on Pass~1 screening; reported prevalence is therefore conditional on flagging.
+Figure~\ref{fig:two_pass_judge_pipeline} summarizes the protocol.
+
+\textbf{Pass~1 (screening).}
+Five broad categories---Factual Integrity, Logical Coherence, Behavioral Resistance, Output Shape, and Tonal Change---each receive a binary judgment relative to baseline (\textsc{Flagged} or \textsc{None}).
+A separate overall steerability label is scored on \textsc{None}, \textsc{Weak}, \textsc{Moderate}, \textsc{Strong}, \textsc{Anti-Steered}, or \textsc{Unmeasurable}.
+This Pass~1 steerability \textit{label} is distinct from the validation-set logit-difference steerability slope used for layer selection.
+A sample is flagged for Pass~2 if any screening category is \textsc{Flagged}; steerability alone does not trigger Pass~2.
+
+\textbf{Pass~2 (severity).}
+Only Pass~1-flagged samples are scored on the 19 dimensions in Table~\ref{tab:side_effect_taxonomy}.
+Judges assign ordinal 0-5 severity per dimension using predefined rubrics, and the scoring is relative to Pass~1.
+Pass~1 category flags are included in the Pass~2 judge prompt as context.
+
+We define \textbf{Pass~1$\to$Pass~2 concordance} as alignment between a Pass~1 category flag and Pass~2 severities on nested dimensions in Table~\ref{tab:side_effect_taxonomy}.
+For each category$\to$dimension pair, we report the percentage of category-flagged samples with severity $> 0$ and the mean severity on that subset.
+Concordance results appear in Appendix~\ref{ap:iaa}.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/two_pass_judge_pipeline.tex}
+  \caption{Two-pass LLM-as-a-judge evaluation funnel. Pass~1 screens every sample for steerability and broad anomaly categories; flagged samples receive Pass~2 ordinal severity scoring on 19 side-effect dimensions, with Pass~1 category flags supplied as judge context.}
+  \label{fig:two_pass_judge_pipeline}
+\end{figure}
+
+\subsection{Severity Scoring and Objective Proxies}
+Pass~2 assigns one \textbf{overall severity score} per dimension per sample.
+The judge reads the full sample---baseline, eight steered generations, and logits---and integrates evidence across all nine multipliers into a single 0-5 rating rather than scoring each $\alpha$ individually.
+Our rubrics are: 1 = barely noticeable deviation at a single $\alpha$; 3 = clearly identifiable deviation across several multipliers; 5 = dominant deviation across most or all steered multipliers.
+This design reduces annotation cost at scale but sacrifices explicit per-$\alpha$ resolution.
+
+To validate overall scores, we re-annotated a stratified subsample of 400 flagged inputs with per-$\alpha$ severity on five dimensions and three raters.
+Correlations between overall and per-$\alpha$ ratings appear in Appendix~\ref{ap:iaa}.
+
+\subsection{Statistical Analysis}\label{sec:Statistical Analysis}
+For each dataset$\times$dimension pair we test whether Pass~2 severity differs from zero using a one-sample Wilcoxon signed-rank test (one-sided, $H_0$: median $=0$).
+Each test uses per-sample Pass~2 severity scores on the Pass~1-flagged subset for that dataset (typically $N \approx 500$-$820$).
+$p$-values are adjusted with the Benjamini-Hochberg procedure across all 684 tests at family-wise rate 0.05.
+Tests with adjusted $p < 0.05$ are declared BH-significant.
+We report mean severity, prevalence (\% non-zero), BH-significance status, and Cohen's $d$ on the flagged subset as effect size; Cohen's $d$ is mean severity divided by the sample standard deviation on the same flagged subset.
+
+Because large $n$ inflates BH-significance on sparse effects, we classify BH-significant cells as \textbf{primary claims} or \textbf{exploratory findings} using pre-specified thresholds (Table~\ref{tab:primary_claim_criteria}).
+Classifications and sensitivity analyses appear in Section~\ref{Statistical Power and Practical Significance}.
+
+\input{sections/generated/primary_claim_criteria.tex}
+
+\subsection{Reliability and Validation Design}\label{Reliability and Validation Design}
+To assess judge reliability without re-annotating the full corpus, we drew a stratified subsample of $N{=}1{,}800$ Pass~1 rows: 50 random samples per dataset across three evaluation batches, each with three independent annotations.
+We computed Krippendorff's ordinal agreement coefficient $\alpha_{\mathrm{ord}}$ on Pratt-complete triples.
+This subsample uses three resamples of the same LLM judge, so $\alpha_{\mathrm{ord}}$ measures scoring variation under repeated resampling rather than human-human agreement (Appendix~\ref{ap:iaa}).
+
+A separate human validation study with a single author-rater on 85 protocol samples (20 calibration, 30 main, 35 Pass~1-unflagged holdout) provides exploratory checks on the four primary-claim dimensions (Appendix~\ref{ap:human_validation}).
+The author-rater scored blind to Pass~1 flags.
+
+\subsection{Scope Note}
+Pass~2 prevalence is conditional on Pass~1 flagging.
+Steered outputs were judged on train, validation, and test splits combined.
+Full-scale annotation uses a single judge per row.
+Pass~1 and Pass~2 ordinal scoring use DeepSeek (\texttt{deepseek-chat}) as an LLM-as-a-judge annotator; this automated judge is a core component of the evaluation methodology, not merely an editing aid.
+Full methodological limitations are discussed in Section~\ref{sec:limitations}.
